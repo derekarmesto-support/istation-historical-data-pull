@@ -1,0 +1,717 @@
+<title>Istation Historical Data Pull — Employee Guide</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0B1120; --surface: #131C30; --surface2: #1A2540; --surface3: #0F1828;
+  --border: #1E2E4A; --border2: #263850;
+  --blue: #3B82F6; --blue-dim: rgba(59,130,246,.12); --blue-glow: rgba(59,130,246,.06);
+  --green: #22C55E; --green-dim: rgba(34,197,94,.1);
+  --amber: #F59E0B; --amber-dim: rgba(245,158,11,.1);
+  --hi: #E2E8F0; --mid: #94A3B8; --lo: #4A5568; --lo2: #334155;
+  --code-bg: #060C18; --r: 8px;
+}
+
+body { background: var(--bg); color: var(--hi); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.7; }
+
+/* ── Top nav ── */
+.topbar { background: var(--surface3); border-bottom: 1px solid var(--border); padding: .75rem 2rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+.topbar-logo { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); }
+.topbar-title { font-size: .85rem; color: var(--mid); }
+.topbar-sep { color: var(--lo); font-size: .7rem; }
+
+/* ── Tab nav ── */
+.tab-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; overflow-x: auto; }
+.tab-btn { padding: .85rem 1.4rem; font-size: .82rem; font-weight: 500; color: var(--lo); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .15s; }
+.tab-btn:hover { color: var(--mid); }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* ── Tab panels ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Page layout ── */
+.page { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+/* ── Hero ── */
+.hero { padding: 2.5rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+.eyebrow { font-size: .63rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--blue); margin-bottom: .6rem; }
+h1 { font-size: 1.75rem; font-weight: 700; line-height: 1.2; margin-bottom: .5rem; }
+.subtitle { color: var(--mid); font-size: .93rem; max-width: 540px; }
+.badges { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.badge { display: inline-flex; align-items: center; gap: .35rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: .25rem .75rem; font-size: .72rem; color: var(--mid); }
+.badge strong { color: var(--hi); }
+
+/* ── Sections ── */
+.section { margin-bottom: 2.5rem; }
+.section-label { font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--lo); padding-bottom: .45rem; border-bottom: 1px solid var(--border); margin-bottom: 1.4rem; }
+h2 { font-size: 1.05rem; font-weight: 600; color: var(--hi); margin-bottom: .4rem; }
+
+/* ── Steps ── */
+.steps { display: flex; flex-direction: column; }
+.step { display: grid; grid-template-columns: 42px 1fr; gap: 0 1rem; position: relative; }
+.step:not(:last-child)::before { content: ''; position: absolute; left: 17px; top: 40px; bottom: 0; width: 1px; background: var(--border); }
+.step-num { width: 34px; height: 34px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; color: var(--blue); flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
+.step-body { padding-bottom: 2rem; }
+.step-title { font-size: .95rem; font-weight: 600; color: var(--hi); line-height: 34px; margin-bottom: .3rem; }
+.step-desc { color: var(--mid); font-size: .84rem; margin-bottom: .7rem; line-height: 1.6; }
+
+/* ── Terminal ── */
+.terminal { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: .6rem 0; }
+.t-bar { background: #0D1625; padding: .45rem .8rem; display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border); }
+.t-dots { display: flex; gap: 5px; }
+.t-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.t-dots span:nth-child(1) { background: #FF5F57; }
+.t-dots span:nth-child(2) { background: #FFBD2E; }
+.t-dots span:nth-child(3) { background: #27C840; }
+.t-win-btns { display: flex; gap: 4px; margin-left: auto; }
+.t-win-btns span { width: 14px; height: 14px; border-radius: 2px; background: var(--border); font-size: 8px; display: flex; align-items: center; justify-content: center; color: var(--lo); }
+.t-label { font-size: .63rem; color: var(--lo); margin: 0 auto; letter-spacing: .05em; }
+.t-body { padding: .85rem 1.05rem; font-family: 'SF Mono','Cascadia Code','Fira Code','Consolas',monospace; font-size: .77rem; line-height: 1.9; }
+.p { color: var(--lo); } .cmd { color: #93C5FD; } .ok { color: #86EFAC; } .warn-t { color: #FCD34D; } .url { color: var(--blue); }
+
+/* ── Callouts ── */
+.callout { border-radius: var(--r); padding: .75rem .95rem; font-size: .81rem; margin: .6rem 0; display: flex; gap: .6rem; align-items: flex-start; line-height: 1.55; }
+.callout-icon { flex-shrink: 0; margin-top: .05rem; }
+.info    { background: var(--blue-dim);  border: 1px solid rgba(59,130,246,.2);  color: #93C5FD; }
+.warn    { background: var(--amber-dim); border: 1px solid rgba(245,158,11,.2);  color: #FCD34D; }
+.success { background: var(--green-dim); border: 1px solid rgba(34,197,94,.2);   color: #86EFAC; }
+
+code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: .1em .38em; font-family: 'SF Mono','Cascadia Code','Consolas',monospace; font-size: .78em; color: #93C5FD; }
+kbd { background: var(--surface2); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: .1em .4em; font-size: .78em; color: var(--mid); }
+
+/* ── Prereqs ── */
+.prereqs { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: .6rem; margin-bottom: 1rem; }
+.prereq { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: .75rem .9rem; }
+.prereq-name { font-size: .79rem; font-weight: 600; color: var(--hi); }
+.prereq-ver { font-size: .68rem; color: var(--blue); font-family: monospace; margin: .12rem 0; }
+.prereq-note { font-size: .68rem; color: var(--mid); }
+
+/* ── UI Mockup ── */
+.ui-mockup { background: #0A0F1E; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: .75rem 0; }
+.mockup-header { background: #0E1530; border-bottom: 1px solid var(--border); padding: .6rem 1rem; }
+.mockup-header-title { font-size: .72rem; color: var(--mid); font-weight: 600; }
+.mockup-tabs { display: flex; gap: 4px; padding: .5rem .8rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+.mtab { font-size: .72rem; padding: .3rem .9rem; border-radius: 6px; color: var(--lo); }
+.mtab.active { background: var(--surface2); color: var(--hi); font-weight: 600; }
+.mockup-body { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .65rem; }
+.mfield { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: .65rem .9rem; }
+.mfield-label { font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--lo); margin-bottom: .35rem; }
+.mfield-value { font-size: .8rem; color: var(--hi); }
+.mfield-placeholder { font-size: .8rem; color: var(--lo2); }
+.mfield-row { display: grid; grid-template-columns: 1fr 2fr; gap: .65rem; }
+.mfield-row3 { display: grid; grid-template-columns: 1fr 2fr; gap: .65rem; }
+.mchecks { display: flex; flex-direction: column; gap: .3rem; padding: .1rem 0; }
+.mcheck { display: flex; align-items: center; gap: .5rem; font-size: .8rem; color: var(--hi); }
+.mcheck-box { width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0; }
+.mcheck-box.on { background: var(--blue); display: flex; align-items: center; justify-content: center; color: white; font-size: .6rem; }
+.mcheck-box.off { border: 1px solid var(--border); }
+.mchips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.mchip { background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.35); border-radius: 20px; padding: .15rem .6rem; font-size: .72rem; color: #93C5FD; }
+.mbtn { background: linear-gradient(135deg,#1D4ED8,#3B82F6); border-radius: 8px; padding: .55rem 1.2rem; font-size: .82rem; font-weight: 600; color: white; text-align: center; margin-top: .3rem; }
+.mlog { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--r); padding: .65rem .9rem; font-family: 'SF Mono','Cascadia Code',monospace; font-size: .72rem; line-height: 1.8; color: var(--mid); }
+.mlog .log-ok { color: #86EFAC; }
+.mlog .log-info { color: #93C5FD; }
+.mlog .log-warn { color: #FCD34D; }
+.annotation { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--blue); margin: .3rem 0 0 .5rem; }
+.annotation::before { content: '↑'; }
+
+/* ── Done ── */
+.done { background: var(--green-dim); border: 1px solid rgba(34,197,94,.25); border-radius: var(--r); padding: 1.1rem 1.2rem; display: flex; gap: .85rem; align-items: center; margin-top: .8rem; }
+.done-text h3 { color: #86EFAC; font-size: .9rem; margin-bottom: .12rem; }
+.done-text p  { color: #4ADE80; font-size: .76rem; opacity: .85; }
+
+/* ── Report types grid ── */
+.rt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .6rem; margin: .6rem 0; }
+.rt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: .75rem .9rem; }
+.rt-name { font-size: .82rem; font-weight: 600; color: var(--hi); margin-bottom: .2rem; }
+.rt-desc { font-size: .72rem; color: var(--mid); line-height: 1.5; }
+
+/* ── Python install mockup ── */
+.install-option { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin: .65rem 0; }
+.install-option-header { background: var(--surface2); padding: .5rem .9rem; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--lo); border-bottom: 1px solid var(--border); }
+.install-option-body { padding: .75rem .9rem; font-size: .82rem; color: var(--mid); }
+
+/* ── Skip banner ── */
+.skip-check { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin: .5rem 0 .75rem; }
+.skip-check-header { background: var(--surface2); padding: .4rem .9rem; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--lo); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .5rem; }
+.skip-pill { background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3); border-radius: 20px; padding: .1rem .55rem; font-size: .6rem; color: #86EFAC; letter-spacing: .06em; }
+.skip-check-body { padding: .6rem .9rem; }
+.skip-check-body p { font-size: .78rem; color: var(--mid); margin-bottom: .5rem; }
+
+/* ── Required badge ── */
+.required-badge { display: inline-flex; align-items: center; gap: .3rem; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); border-radius: 20px; padding: .12rem .55rem; font-size: .62rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #FCA5A5; margin-left: .5rem; vertical-align: middle; }
+
+@media (max-width: 600px) {
+  .mfield-row, .mfield-row3 { grid-template-columns: 1fr; }
+  .tab-btn { padding: .75rem .9rem; font-size: .78rem; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-logo">Amira Learning</div>
+  <div class="topbar-sep">/</div>
+  <div class="topbar-title">Istation Historical Data Pull</div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="showTab('mac')">🍎 Mac Setup</button>
+  <button class="tab-btn" onclick="showTab('windows')">🪟 Windows Setup</button>
+  <button class="tab-btn" onclick="showTab('usage')">Using the Reports Tab</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════ OVERVIEW -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="page">
+    <div class="hero">
+      <div class="eyebrow">Internal Support Tool</div>
+      <h1>Istation Historical Data Pull</h1>
+      <p class="subtitle">Download historical Istation reports for any district — directly from your browser, no manual portal navigation required.</p>
+      <div class="badges">
+        <div class="badge">📅 <strong>2018-19</strong> through <strong>2024-25</strong></div>
+        <div class="badge">🌐 <strong>secure.istation.com</strong></div>
+        <div class="badge">💻 <strong>Mac</strong> + <strong>Windows</strong></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">What this tool does</div>
+      <p style="color:var(--mid);font-size:.875rem;margin-bottom:1rem;">When a district requests historical data, this tool logs into Istation using your Google account and downloads the requested CSV exports automatically. You fill out a short form, click Start Download, sign in once, and the files land on your computer.</p>
+      <div class="rt-grid">
+        <div class="rt-card"><div class="rt-name">Executive Summary</div><div class="rt-desc">Student-level ISIP assessment results by skill and period</div></div>
+        <div class="rt-card"><div class="rt-name">Usage</div><div class="rt-desc">Minutes spent per student across the school year</div></div>
+        <div class="rt-card"><div class="rt-name">Usage Trend</div><div class="rt-desc">Week-by-week usage over time</div></div>
+        <div class="rt-card"><div class="rt-name">Level Movement</div><div class="rt-desc">Students who moved up or down a reading/math level</div></div>
+        <div class="rt-card"><div class="rt-name">Completion</div><div class="rt-desc">ISIP assessment completion rates by student</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">How to get started</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Set up the tool on your computer</div>
+            <p class="step-desc">Follow the setup guide for your operating system. Takes about 10–15 minutes and only needs to be done once.</p>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.4rem;">
+              <button onclick="showTab('mac')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.45rem 1rem;font-size:.8rem;color:var(--hi);cursor:pointer;">🍎 Mac Setup →</button>
+              <button onclick="showTab('windows')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.45rem 1rem;font-size:.8rem;color:var(--hi);cursor:pointer;">🪟 Windows Setup →</button>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Launch the dashboard</div>
+            <p class="step-desc">Open Terminal (Mac) or Command Prompt (Windows) and run the start command. The dashboard opens in Chrome.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Use the Reports tab</div>
+            <p class="step-desc">Enter the district OID, select years and report types, and click Start Download. Chrome will open, you'll sign in once, and files download automatically.</p>
+            <button onclick="showTab('usage')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.45rem 1rem;font-size:.8rem;color:var(--hi);cursor:pointer;margin-top:.4rem;">How to use Reports tab →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Source code</div>
+      <p style="color:var(--mid);font-size:.875rem;">The project is hosted on GitHub. Use this to get the latest version or share with a new team member.</p>
+      <div class="terminal" style="margin-top:.75rem;">
+        <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal / Command Prompt</div></div>
+        <div class="t-body"><span class="cmd">git clone https://github.com/derekarmesto-support/istation-historical-data-pull.git</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ MAC -->
+<div class="tab-panel" id="tab-mac">
+  <div class="page">
+    <div class="hero">
+      <div class="eyebrow">Installation — macOS</div>
+      <h1>Mac Setup</h1>
+      <p class="subtitle">Takes about 10 minutes. Only needs to be done once.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">What you need</div>
+      <div class="prereqs">
+        <div class="prereq"><div class="prereq-name">Python 3</div><div class="prereq-ver">3.9 or later</div><div class="prereq-note">Most Macs already have this</div></div>
+        <div class="prereq"><div class="prereq-name">Google Chrome</div><div class="prereq-ver">latest</div><div class="prereq-note">Must be up to date</div></div>
+        <div class="prereq"><div class="prereq-name">Homebrew</div><div class="prereq-ver">any</div><div class="prereq-note">Free — install in Step 2</div></div>
+        <div class="prereq"><div class="prereq-name">Amira Google Account</div><div class="prereq-ver">@amiralearning.com</div><div class="prereq-note">Needs Istation admin access</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Steps</div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Open Terminal</div>
+            <p class="step-desc">Press <kbd>⌘ Space</kbd>, type <strong>Terminal</strong>, press Enter.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Check if Python is installed</div>
+            <div class="skip-check">
+              <div class="skip-check-header"><span class="skip-pill">SKIP IF INSTALLED</span> Run this first</div>
+              <div class="skip-check-body">
+                <div class="terminal" style="margin:0;">
+                  <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+                  <div class="t-body"><span class="p">% </span><span class="cmd">python3 --version</span><br><span class="ok">Python 3.12.0  ← if you see this, skip to Step 3</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="step-desc">If you <em>don't</em> see a version number, install Python from <strong>python.org/downloads</strong> — download the latest macOS installer and run it.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Check if Homebrew is installed</div>
+            <div class="skip-check">
+              <div class="skip-check-header"><span class="skip-pill">SKIP IF INSTALLED</span> Run this first</div>
+              <div class="skip-check-body">
+                <div class="terminal" style="margin:0;">
+                  <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+                  <div class="t-body"><span class="p">% </span><span class="cmd">brew --version</span><br><span class="ok">Homebrew 4.x.x  ← if you see this, skip to Step 4</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="step-desc">If you don't see a version, install Homebrew:</p>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+              <div class="t-body"><span class="p">% </span><span class="cmd">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span><br><span class="ok">==> Homebrew installed successfully</span></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">ℹ</div><div>It will ask for your Mac password. Nothing appears as you type — that's normal. Press Enter when done.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Install ChromeDriver <span class="required-badge">Required</span></div>
+            <p class="step-desc">ChromeDriver lets Python control Chrome to log in to Istation automatically. Most people won't have this — run both commands.</p>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+              <div class="t-body"><span class="p">% </span><span class="cmd">brew install --cask chromedriver</span><br><span class="ok">🍺  chromedriver was successfully installed</span><br><br><span class="p">% </span><span class="cmd">xattr -d com.apple.quarantine $(which chromedriver)</span></div>
+            </div>
+            <div class="callout success"><div class="callout-icon">✓</div><div>The second command has no output when it works. If you see "No such xattr" — that's fine, keep going.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Install Python packages <span class="required-badge">Required</span></div>
+            <p class="step-desc">Installs Streamlit (the dashboard), Selenium (browser automation), and Requests (file downloads).</p>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+              <div class="t-body"><span class="p">% </span><span class="cmd">pip3 install streamlit selenium requests</span><br><span class="ok">Successfully installed streamlit selenium requests</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">Check if Git is installed</div>
+            <div class="skip-check">
+              <div class="skip-check-header"><span class="skip-pill">SKIP IF INSTALLED</span> Run this first</div>
+              <div class="skip-check-body">
+                <div class="terminal" style="margin:0;">
+                  <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+                  <div class="t-body"><span class="p">% </span><span class="cmd">git --version</span><br><span class="ok">git version 2.x.x  ← if you see this, skip to Step 7</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="step-desc">If Git isn't installed, macOS will prompt you to install the Xcode Command Line Tools — click Install and wait for it to finish.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <div class="step-title">Download the project <span class="required-badge">Required</span></div>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+              <div class="t-body"><span class="p">% </span><span class="cmd">cd ~/Documents</span><br><span class="p">% </span><span class="cmd">git clone https://github.com/derekarmesto-support/istation-historical-data-pull.git</span><br><span class="ok">Cloning into 'istation-historical-data-pull'...</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">8</div>
+          <div class="step-body">
+            <div class="step-title">Start the dashboard</div>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-dots"><span></span><span></span><span></span></div><div class="t-label">Terminal</div></div>
+              <div class="t-body"><span class="p">% </span><span class="cmd">cd ~/Documents/istation-historical-data-pull</span><br><span class="p">% </span><span class="cmd">streamlit run istation_dashboard.py --server.port 8503</span><br><br><span class="ok">  You can now view your Streamlit app in your browser.</span><br><span class="warn-t">  Local URL: </span><span class="url">http://localhost:8503</span></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">ℹ</div><div>Chrome will open automatically. If it doesn't, go to <code>http://localhost:8503</code>.</div></div>
+            <div class="callout warn"><div class="callout-icon">⚠</div><div>If you see "Port 8503 is not available": <code>lsof -nP -iTCP:8503 | awk 'NR>1{print $2}' | xargs kill -9</code> then try again.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">9</div>
+          <div class="step-body">
+            <div class="step-title">Confirm it's working</div>
+            <div class="callout success"><div class="callout-icon">✓</div><div>You should see three tabs: <strong>Request Sheet</strong>, <strong>Historical Run</strong>, and <strong>Reports</strong>.</div></div>
+            <div class="done"><div style="font-size:1.3rem;">🚀</div><div class="done-text"><h3>Setup complete</h3><p>Head to the "Using the Reports Tab" guide to run your first download.</p></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Stopping the dashboard</div>
+      <p style="color:var(--mid);font-size:.84rem;">Go back to Terminal and press <kbd>Control + C</kbd>. Don't close Terminal while a download is in progress.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ WINDOWS -->
+<div class="tab-panel" id="tab-windows">
+  <div class="page">
+    <div class="hero">
+      <div class="eyebrow">Installation — Windows 10 / 11</div>
+      <h1>Windows Setup</h1>
+      <p class="subtitle">Takes about 10–15 minutes. Only needs to be done once.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">What you need</div>
+      <div class="prereqs">
+        <div class="prereq"><div class="prereq-name">Python 3</div><div class="prereq-ver">3.9 or later</div><div class="prereq-note">Free from python.org</div></div>
+        <div class="prereq"><div class="prereq-name">Git</div><div class="prereq-ver">any</div><div class="prereq-note">Free from git-scm.com</div></div>
+        <div class="prereq"><div class="prereq-name">Google Chrome</div><div class="prereq-ver">latest</div><div class="prereq-note">Must be up to date</div></div>
+        <div class="prereq"><div class="prereq-name">Amira Google Account</div><div class="prereq-ver">@amiralearning.com</div><div class="prereq-note">Needs Istation admin access</div></div>
+      </div>
+      <div class="callout info"><div class="callout-icon">ℹ</div><div>No separate ChromeDriver download needed — Selenium handles it automatically on Windows.</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Steps</div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Open Command Prompt</div>
+            <p class="step-desc">Press <kbd>Windows</kbd> + <kbd>R</kbd>, type <code>cmd</code>, press Enter.</p>
+            <div class="callout info"><div class="callout-icon">ℹ</div><div>Use Command Prompt — not PowerShell.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Check if Python is installed</div>
+            <div class="skip-check">
+              <div class="skip-check-header"><span class="skip-pill">SKIP IF INSTALLED</span> Run this first</div>
+              <div class="skip-check-body">
+                <div class="terminal" style="margin:0;">
+                  <div class="t-bar"><div class="t-label">Command Prompt</div><div class="t-win-btns"><span>─</span><span>□</span><span>✕</span></div></div>
+                  <div class="t-body"><span class="p">C:\&gt; </span><span class="cmd">python --version</span><br><span class="ok">Python 3.12.0  ← if you see this, skip to Step 3</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="step-desc">If you don't see a version number, go to <strong>python.org/downloads</strong> and download the latest Python 3 installer. When you run it, make sure to check <strong>"Add Python to PATH"</strong> before clicking Install Now.</p>
+            <div class="install-option">
+              <div class="install-option-header">Python Installer — Critical Setting</div>
+              <div class="install-option-body" style="display:flex;align-items:center;gap:.6rem;">
+                <div style="width:14px;height:14px;border-radius:3px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:white;font-size:.6rem;flex-shrink:0;">✓</div>
+                <span style="color:var(--hi);font-size:.84rem;">Add Python to PATH</span>
+                <span style="color:var(--blue);font-size:.72rem;font-weight:700;">← Check this box</span>
+              </div>
+            </div>
+            <div class="callout warn"><div class="callout-icon">⚠</div><div>Missing this box means nothing will work. If you already installed Python without it — uninstall and reinstall with the box checked, then reopen Command Prompt.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Check if Git is installed</div>
+            <div class="skip-check">
+              <div class="skip-check-header"><span class="skip-pill">SKIP IF INSTALLED</span> Run this first</div>
+              <div class="skip-check-body">
+                <div class="terminal" style="margin:0;">
+                  <div class="t-bar"><div class="t-label">Command Prompt</div><div class="t-win-btns"><span>─</span><span>□</span><span>✕</span></div></div>
+                  <div class="t-body"><span class="p">C:\&gt; </span><span class="cmd">git --version</span><br><span class="ok">git version 2.x.x  ← if you see this, skip to Step 4</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="step-desc">If Git isn't installed, go to <strong>git-scm.com/download/win</strong> and run the installer. Leave all options at their defaults and click Next through each screen. Reopen Command Prompt when done.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Install Python packages <span class="required-badge">Required</span></div>
+            <p class="step-desc">Installs Streamlit (the dashboard), Selenium (browser automation for the login), and Requests (file downloads). ChromeDriver is managed automatically — no separate download needed.</p>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-label">Command Prompt</div><div class="t-win-btns"><span>─</span><span>□</span><span>✕</span></div></div>
+              <div class="t-body"><span class="p">C:\&gt; </span><span class="cmd">pip install streamlit selenium requests</span><br><span class="ok">Successfully installed streamlit selenium requests</span></div>
+            </div>
+            <div class="callout warn"><div class="callout-icon">⚠</div><div>If you see "pip is not recognized" — close Command Prompt, reopen it, and try again. Still failing? Python wasn't added to PATH — reinstall Python.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Download the project <span class="required-badge">Required</span></div>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-label">Command Prompt</div><div class="t-win-btns"><span>─</span><span>□</span><span>✕</span></div></div>
+              <div class="t-body"><span class="p">C:\Users\You&gt; </span><span class="cmd">cd Documents</span><br><span class="p">C:\Users\You\Documents&gt; </span><span class="cmd">git clone https://github.com/derekarmesto-support/istation-historical-data-pull.git</span><br><span class="ok">Cloning into 'istation-historical-data-pull'...</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">Start the dashboard</div>
+            <div class="terminal">
+              <div class="t-bar"><div class="t-label">Command Prompt</div><div class="t-win-btns"><span>─</span><span>□</span><span>✕</span></div></div>
+              <div class="t-body"><span class="p">C:\Users\You\Documents&gt; </span><span class="cmd">cd istation-historical-data-pull</span><br><span class="p">C:\...\istation-historical-data-pull&gt; </span><span class="cmd">streamlit run istation_dashboard.py --server.port 8503</span><br><br><span class="ok">  You can now view your Streamlit app in your browser.</span><br><span class="warn-t">  Local URL: </span><span class="url">http://localhost:8503</span></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">ℹ</div><div>Chrome will open automatically. If it doesn't, go to <code>http://localhost:8503</code>.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <div class="step-title">Confirm it's working</div>
+            <div class="callout success"><div class="callout-icon">✓</div><div>You should see three tabs: <strong>Request Sheet</strong>, <strong>Historical Run</strong>, and <strong>Reports</strong>.</div></div>
+            <div class="done"><div style="font-size:1.3rem;">🚀</div><div class="done-text"><h3>Setup complete</h3><p>Head to the "Using the Reports Tab" guide to run your first download.</p></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Stopping the dashboard</div>
+      <p style="color:var(--mid);font-size:.84rem;">Go back to Command Prompt and press <kbd>Ctrl + C</kbd>. Don't close Command Prompt while a download is running.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ USAGE -->
+<div class="tab-panel" id="tab-usage">
+  <div class="page">
+    <div class="hero">
+      <div class="eyebrow">User Guide</div>
+      <h1>Using the Reports Tab</h1>
+      <p class="subtitle">Pull historical reports for any district in under 5 minutes.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Before you start</div>
+      <div class="callout info"><div class="callout-icon">ℹ</div><div>Make sure the dashboard is running. If it isn't, open Terminal (Mac) or Command Prompt (Windows), navigate to the project folder, and run: <code>streamlit run istation_dashboard.py --server.port 8503</code></div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Steps</div>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Open the Reports tab</div>
+            <p class="step-desc">Go to <code>http://localhost:8503</code> in Chrome and click the <strong>Reports</strong> tab.</p>
+            <div class="ui-mockup">
+              <div class="mockup-header"><div class="mockup-header-title">Istation Historical Data Pull</div></div>
+              <div class="mockup-tabs">
+                <div class="mtab">Request Sheet</div>
+                <div class="mtab">Historical Run</div>
+                <div class="mtab active">Reports</div>
+              </div>
+              <div class="mockup-body" style="padding:.75rem 1rem .5rem;">
+                <div style="font-size:.72rem;color:var(--lo);">Form fields appear here…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Enter your Google account email</div>
+            <p class="step-desc">This is the <code>@amiralearning.com</code> account you use to sign in to Istation. It's saved after the first time — you won't need to re-enter it.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mfield">
+                  <div class="mfield-label">Google Account Email</div>
+                  <div class="mfield-value">you@amiralearning.com</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Select the district</div>
+            <p class="step-desc">Click the District dropdown and start typing the district name or OID. Select the correct entry — the state abbreviation helps distinguish districts with the same name.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mfield">
+                  <div class="mfield-label">District</div>
+                  <div class="mfield-value">Hardin-Jefferson Ind Sch Dist (TX) — 1000009195</div>
+                </div>
+              </div>
+            </div>
+            <div class="callout info"><div class="callout-icon">ℹ</div><div>Made a mistake? Click the <strong>✕</strong> button to the right of the dropdown to clear and search again.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Select school year(s)</div>
+            <p class="step-desc">Click the School Year(s) field and select every year the district is requesting. You can select multiple.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mfield">
+                  <div class="mfield-label">School Year(s)</div>
+                  <div class="mchips">
+                    <div class="mchip">2022-23 ×</div>
+                    <div class="mchip">2023-24 ×</div>
+                    <div class="mchip">2024-25 ×</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Select products and report types</div>
+            <p class="step-desc">Check the products the district uses (Reading, Lectura, Math) and the report types they've requested.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mfield-row">
+                  <div class="mfield">
+                    <div class="mfield-label">Products</div>
+                    <div class="mchecks">
+                      <div class="mcheck"><div class="mcheck-box on">✓</div> Reading</div>
+                      <div class="mcheck"><div class="mcheck-box on">✓</div> Lectura</div>
+                      <div class="mcheck"><div class="mcheck-box off"></div> Math</div>
+                    </div>
+                  </div>
+                  <div class="mfield">
+                    <div class="mfield-label">Report Types</div>
+                    <div class="mchecks">
+                      <div class="mcheck"><div class="mcheck-box on">✓</div> Executive Summary</div>
+                      <div class="mcheck"><div class="mcheck-box on">✓</div> Level Movement</div>
+                      <div class="mcheck"><div class="mcheck-box off"></div> Usage</div>
+                      <div class="mcheck"><div class="mcheck-box off"></div> Usage Trend</div>
+                      <div class="mcheck"><div class="mcheck-box off"></div> Completion</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-body">
+            <div class="step-title">Click Start Download</div>
+            <p class="step-desc">The button activates once all required fields are filled. Click it and Chrome will open automatically.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mbtn">Start Download</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">7</div>
+          <div class="step-body">
+            <div class="step-title">Sign in to Google</div>
+            <p class="step-desc">Chrome opens the Istation login page. It will automatically enter the domain and click the SSO button. When Google's sign-in appears, select your <code>@amiralearning.com</code> account and complete any password or 2FA prompt.</p>
+            <div class="callout warn"><div class="callout-icon">⚠</div><div>Do not close Chrome while downloads are running. You can minimize it once login is complete.</div></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">8</div>
+          <div class="step-body">
+            <div class="step-title">Watch the log and wait</div>
+            <p class="step-desc">Back in the dashboard, a live log shows each file as it downloads. Green checkmarks mean success. When all files are done you'll see a completion banner.</p>
+            <div class="ui-mockup">
+              <div class="mockup-body">
+                <div class="mlog">
+                  <span class="log-info">📅 2023-24...</span><br>
+                  <span class="log-ok">✅ ExecutiveSummary_Reading_2023-24_YTD.csv</span><br>
+                  <span class="log-ok">✅ ExecutiveSummary_Lectura_2023-24_YTD.csv</span><br>
+                  <span class="log-ok">✅ LevelMovement_Reading_2023-24.csv</span><br>
+                  <span class="log-ok">✅ LevelMovement_Lectura_2023-24.csv</span><br>
+                  <span class="log-info">📅 2024-25...</span><br>
+                  <span class="log-ok">✅ ExecutiveSummary_Reading_2024-25_YTD.csv</span>
+                </div>
+              </div>
+            </div>
+            <div class="callout success" style="margin-top:.6rem;"><div class="callout-icon">✓</div><div>Files are saved to your Documents folder under <strong>Istation Reports / {school year} / {report type} /</strong></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Advanced Options</div>
+      <p style="color:var(--mid);font-size:.84rem;margin-bottom:.75rem;">Click <strong>Advanced Options</strong> to access additional filters. These are optional and rarely needed for standard requests.</p>
+      <div class="rt-grid">
+        <div class="rt-card"><div class="rt-name">Grade Filter</div><div class="rt-desc">Limit results to a specific grade level. Default is All.</div></div>
+        <div class="rt-card"><div class="rt-name">Skill Filter</div><div class="rt-desc">Filter by a specific skill area within a product.</div></div>
+        <div class="rt-card"><div class="rt-name">Assessment Mode</div><div class="rt-desc">Year to Date (default), Current Month, or specific periods.</div></div>
+        <div class="rt-card"><div class="rt-name">Save Location</div><div class="rt-desc">Where files are saved. Defaults to your Documents folder.</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Common issues</div>
+      <div class="callout warn" style="margin-bottom:.5rem;"><div class="callout-icon">⚠</div><div><strong>Start Download is greyed out</strong> — One or more required fields is empty. Check that email, district, school year, at least one product, and at least one report type are all filled in.</div></div>
+      <div class="callout warn" style="margin-bottom:.5rem;"><div class="callout-icon">⚠</div><div><strong>Chrome opens but stays on the login page</strong> — Complete the Google sign-in manually. The tool will resume downloading automatically after login.</div></div>
+      <div class="callout warn"><div class="callout-icon">⚠</div><div><strong>A file shows ⚠ no data returned</strong> — Istation returned an empty export for that product/year combination. This is a data issue on Istation's side, not a tool error.</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const idx = ['overview','mac','windows','usage'].indexOf(id);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
