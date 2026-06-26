@@ -22,7 +22,9 @@ Then open http://localhost:8503 in Chrome.
 
 ## Full Setup & Usage Guide
 
-See the [Employee Handoff Guide](https://claude.ai/code/artifact/handoff) for step-by-step installation instructions (Mac and Windows) and a walkthrough of the Reports tab.
+See the [Employee Handoff Guide](docs/employee_guide.html) for step-by-step installation instructions (Mac and Windows) and a walkthrough of the Reports tab.
+
+> To view the guide, clone the repo and open `docs/employee_guide.html` in Chrome, or view it at the shareable link: https://claude.ai/code/artifact/6f4b08da-f15b-4b24-a376-2c3dad05c74e
 
 ## Files
 
