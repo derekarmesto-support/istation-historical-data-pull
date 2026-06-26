@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.dashboard_prefs.json
+.DS_Store
+*.tmp
