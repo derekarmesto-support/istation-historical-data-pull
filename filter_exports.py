@@ -30,7 +30,7 @@ DISTRICT       = "Denver Language School"
 DISTRICT_STATE = "Florida"
 
 # Student IDs to keep — add more as needed
-STUDENT_IDS = {"904270"}
+STUDENT_IDS = {"000000"}  # placeholder: replace with the real student ID(s) before running
 
 # Local folder where filtered files are saved
 LOCAL_OUTPUT = Path.home() / "Documents" / "Istation Filtered Exports" / DISTRICT
